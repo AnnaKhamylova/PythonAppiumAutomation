@@ -9,25 +9,46 @@ class TestFirst:
     def __setup_class(self, driver_setup_teardown):
         self.driver = driver_setup_teardown
 
-    def wait_for_el_by_xpath(self, xpath, timeout=5, error_message='Элемент не найден'):
+    def wait_for_el_present(self, by, locator, timeout=5, error_message='Элемент не найден'):
         try:
-            element = WebDriverWait(self.driver, timeout).until(EC.presence_of_element_located((By.XPATH, xpath)))
+            element = WebDriverWait(self.driver, timeout).until(EC.presence_of_element_located(
+                (getattr(By, by.upper()), locator))
+            )
             return element
         except Exception:
-            pytest.fail(f"{error_message} | Локатор: {xpath}'")
+            pytest.fail(f"{error_message} | Локатор: {locator}'")
 
-    def wait_for_el_and_click_by_xpath(self, xpath, timeout=5, error_message='Элемент не найден или не кликабелен'):
+    def wait_for_el_not_present(self, by, locator, timeout=5, error_message='Элемент не ушёл с экрана'):
         try:
-            element = self.wait_for_el_by_xpath(xpath=xpath, timeout=timeout, error_message=error_message)
+            element = WebDriverWait(self.driver, timeout).until(EC.invisibility_of_element(
+                (getattr(By, by.upper()), locator))
+            )
+            return element
+        except Exception:
+            pytest.fail(f"{error_message} | Локатор: {locator}'")
+
+    def wait_for_el_and_click(self, by, locator, timeout=5,
+                              error_message='Элемент не найден или не кликабелен'):
+        try:
+            element = self.wait_for_el_present(by=by, locator=locator, timeout=timeout, error_message=error_message)
             element.click()
             return element
         except Exception:
-            pytest.fail(f"{error_message} | Локатор: {xpath}'")
+            pytest.fail(f"{error_message} | Локатор: {locator}'")
 
-    def assert_element_has_text(self, locator, text,
+    def wait_for_el_and_send_keys(self, by, locator, keys, timeout=5,
+                                  error_message='Элемент не найден или не получилось отправить значения'):
+        try:
+            element = self.wait_for_el_present(by=by, locator=locator, timeout=timeout, error_message=error_message)
+            element.send_keys(keys)
+            return element
+        except Exception:
+            pytest.fail(f"{error_message} | Локатор: {locator}'")
+
+    def assert_element_has_text(self, by, locator, text,
                                 error_message='Текст в элементе и дочерних элементах не найден', timeout=5):
         try:
-            element = self.wait_for_el_by_xpath(xpath=locator, timeout=timeout)
+            element = self.wait_for_el_present(by=by, locator=locator, timeout=timeout, error_message=error_message)
             if element.text == text:
                 return element
             else:
@@ -37,13 +58,37 @@ class TestFirst:
                 if len(children_with_text) > 0:
                     return children_with_text
         except Exception:
-            pytest.fail(f"{error_message} | Локатор: {element}'")
+            pytest.fail(f"{error_message} | Локатор: {locator}'")
+
+    def test_first(self):
+        """Пример теста."""
+        print(f'run first test')
+        assert self.driver is not None, "Драйвер не инициализирован!"
 
     def test_search_has_text(self):
-        print(f'run first test')
-        skip_button = self.wait_for_el_and_click_by_xpath(
-            '//*[contains(@resource-id, "org.wikipedia:id/fragment_onboarding_skip_button")]'
-        )
-        search_bar = self.wait_for_el_by_xpath('//*[contains(@resource-id, "org.wikipedia:id/search_container")]')
+        """Проверяет наличие текста в поисковой строке"""
+        skip_button = self.wait_for_el_and_click(by='xpath',
+                                                 locator='//*[contains(@resource-id, "org.wikipedia:id/fragment_onboarding_skip_button")]')
+        search_bar = self.wait_for_el_present(by='xpath',
+                                              locator='//*[contains(@resource-id, "org.wikipedia:id/search_container")]')
+        search_bar_with_text = self.assert_element_has_text(by='xpath',
+                                                            locator='//*[contains(@resource-id, "org.wikipedia:id/search_container")]',
+                                                            text='Поиск по Википедии')
+
+    def test_cancel_search(self):
+        """Проверяет наличие текста в поисковой строке"""
+        skip_button = self.wait_for_el_and_click(by='xpath',
+                                                 locator='//*[contains(@resource-id, '
+                                                         '"org.wikipedia:id/fragment_onboarding_skip_button")]')
+        search_bar = self.wait_for_el_present(by='xpath',
+                     locator='//*[contains(@resource-id, "org.wikipedia:id/search_container")]')
         search_bar_with_text = self.assert_element_has_text(
-            '//*[contains(@resource-id, "org.wikipedia:id/search_container")]', 'Поиск по Википедии')
+            by='xpath', locator='//*[contains(@resource-id, "org.wikipedia:id/search_container")]',
+            text='Поиск по Википедии')
+        search_bar.click()
+        search_edit_frame = self.wait_for_el_and_send_keys(by='xpath',
+                                                           locator='//android.widget.AutoCompleteTextView'
+                                                                   '[@resource-id="org.wikipedia:id/search_src_text"]',
+                                                           keys='Appium')
+        search_close = self.wait_for_el_and_click(by='id', locator='org.wikipedia:id/search_close_btn')
+        self.wait_for_el_not_present(by='id', locator='org.wikipedia:id/search_close_btn')
