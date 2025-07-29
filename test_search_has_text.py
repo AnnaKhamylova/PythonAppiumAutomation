@@ -92,3 +92,28 @@ class TestFirst:
                                                            keys='Appium')
         search_close = self.wait_for_el_and_click(by='id', locator='org.wikipedia:id/search_close_btn')
         self.wait_for_el_not_present(by='id', locator='org.wikipedia:id/search_close_btn')
+
+    def test_cancel_search_for_ex(self):
+        """Что делает тест:
+            - Ищет какое-то слово
+            - Убеждается, что найдено несколько статей
+            - Отменяет поиск
+            - Убеждается, что результат поиска пропал"""
+        skip_button = self.wait_for_el_and_click(by='xpath',
+                                                 locator='//*[contains(@resource-id, '
+                                                         '"org.wikipedia:id/fragment_onboarding_skip_button")]')
+        search_bar = self.wait_for_el_and_click(by='xpath',
+                                              locator='//*[contains(@resource-id, "org.wikipedia:id/search_container")]')
+        search_edit_frame = self.wait_for_el_and_send_keys(by='xpath',
+                                                           locator='//android.widget.AutoCompleteTextView'
+                                                                   '[@resource-id="org.wikipedia:id/search_src_text"]',
+                                                           keys='Appium')
+        search_result = self.wait_for_el_present(by='id', locator='org.wikipedia:id/search_results_list')
+        article_list = search_result.find_elements(By.ID, "org.wikipedia:id/page_list_item_title")
+        assert article_list, "Список статей пуст!"
+        search_close = self.wait_for_el_and_click(by='id', locator='org.wikipedia:id/search_close_btn')
+        self.wait_for_el_not_present(by='id', locator='org.wikipedia:id/search_close_btn')
+        self.wait_for_el_not_present(by='id', locator='org.wikipedia:id/search_results_list')
+
+
+
