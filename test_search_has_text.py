@@ -115,7 +115,7 @@ class TestFirst:
         self.wait_for_el_not_present(by='id', locator='org.wikipedia:id/search_close_btn')
         self.wait_for_el_not_present(by='id', locator='org.wikipedia:id/search_results_list')
 
-    def find_words_in_search_result_for_ex(self):
+    def test_find_words_in_search_result_for_ex(self):
         key_word = 'Python'
         skip_button = self.wait_for_el_and_click(by='xpath',
                                                  locator='//*[contains(@resource-id, '
