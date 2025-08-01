@@ -115,5 +115,20 @@ class TestFirst:
         self.wait_for_el_not_present(by='id', locator='org.wikipedia:id/search_close_btn')
         self.wait_for_el_not_present(by='id', locator='org.wikipedia:id/search_results_list')
 
-
-
+    def find_words_in_search_result_for_ex(self):
+        key_word = 'Python'
+        skip_button = self.wait_for_el_and_click(by='xpath',
+                                                 locator='//*[contains(@resource-id, '
+                                                         '"org.wikipedia:id/fragment_onboarding_skip_button")]')
+        search_bar = self.wait_for_el_and_click(by='xpath',
+                                                locator='//*[contains(@resource-id, "org.wikipedia:id/search_container")]')
+        search_edit_frame = self.wait_for_el_and_send_keys(by='xpath',
+                                                           locator='//android.widget.AutoCompleteTextView'
+                                                                   '[@resource-id="org.wikipedia:id/search_src_text"]',
+                                                           keys=key_word)
+        search_result = self.wait_for_el_present(by='id', locator='org.wikipedia:id/search_results_list')
+        article_list = search_result.find_elements(By.ID, "org.wikipedia:id/page_list_item_title")
+        assert article_list, "Список статей пуст!"
+        for article in article_list:
+            article_text = article.text
+            assert key_word in article_text, f"Текст '{key_word}' не найден в элементе {article}. Текст элемента: '{article_text}'"
