@@ -1,8 +1,11 @@
 import pytest
+from selenium.webdriver import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-
+from selenium.webdriver.common.actions.action_builder import ActionBuilder
+from selenium.webdriver.common.actions.pointer_input import PointerInput
+from selenium.webdriver.common.actions import interaction
 
 class TestFirst:
     @pytest.fixture(autouse=True)
@@ -59,6 +62,22 @@ class TestFirst:
                     return children_with_text
         except Exception:
             pytest.fail(f"{error_message} | Локатор: {locator}'")
+
+    def swipe_left(self, time_of_swipe):
+        actions = ActionChains(self.driver)
+        size = self.driver.get_window_size()
+        y = size['height'] / 2
+        start_x = size['width'] * 0.8
+        end_x = size['width'] * 0.2
+        actions.w3c_actions = ActionBuilder(self.driver, mouse=PointerInput(interaction.POINTER_TOUCH, "finger"))
+        (actions.w3c_actions
+         .pointer_action
+         .move_to_location(start_x, y)
+         .pointer_down()
+         .move_to_location(end_x, y)
+         .pause(time_of_swipe)
+         .pointer_up())
+        actions.perform()
 
     def test_first(self):
         """Пример теста."""
@@ -132,3 +151,19 @@ class TestFirst:
         for article in article_list:
             article_text = article.text
             assert key_word in article_text, f"Текст '{key_word}' не найден в элементе {article}. Текст элемента: '{article_text}'"
+
+    def test_swipe(self):
+        first_screen = self.assert_element_has_text(by='id', locator='org.wikipedia:id/secondaryTextView',
+                                                    text='Мы нашли следующие языки на вашем устройстве:')
+        self.swipe_left(0.1)
+        second_screen = self.assert_element_has_text(by='id', locator='org.wikipedia:id/primaryTextView',
+                                                     text='Новые способы исследований')
+        self.swipe_left(0.1)
+        third_screen = self.assert_element_has_text(by='id', locator='org.wikipedia:id/primaryTextView',
+                                                    text='Списки для чтения с синхронизацией')
+        self.swipe_left(0.1)
+        fourth_screen = self.assert_element_has_text(by='id', locator='org.wikipedia:id/primaryTextView',
+                                                    text='Отправлять отчёты об использовании')
+        accept_button = self.wait_for_el_and_click(by='id', locator='org.wikipedia:id/acceptButton')
+        search_bar = self.wait_for_el_present(by='xpath',
+                                                locator='//*[contains(@resource-id, "org.wikipedia:id/search_container")]')
