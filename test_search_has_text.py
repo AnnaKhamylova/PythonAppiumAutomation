@@ -243,3 +243,24 @@ class TestFirst:
         article_title_after_rotation = self.wait_for_el_and_get_attribute(by='xpath',
                                     locator='//android.view.View[@resource-id="pcs"]/android.view.View[1]', attribute='text')
         assert article_title_before_rotation == article_title_after_rotation, 'Заголовок статьи до и после ротации экрана не равны!'
+
+    def test_check_search_article_in_background(self):
+        key_word = 'Python'
+        skip_button = self.wait_for_el_and_click(by='xpath',
+                                                 locator='//*[contains(@resource-id, '
+                                                         '"org.wikipedia:id/fragment_onboarding_skip_button")]')
+        search_bar = self.wait_for_el_and_click(by='xpath',
+                                                locator='//*[contains(@resource-id, "org.wikipedia:id/search_container")]')
+        search_edit_frame = self.wait_for_el_and_send_keys(by='xpath',
+                                                           locator='//android.widget.AutoCompleteTextView'
+                                                                   '[@resource-id="org.wikipedia:id/search_src_text"]',
+                                                           keys=key_word)
+        search_result = self.wait_for_el_present(by='id', locator='org.wikipedia:id/search_results_list')
+        locator_title = "//*[@resource-id='org.wikipedia:id/page_list_item_title'and @text='Python']"
+        article_before = self.wait_for_el_present(by='xpath',
+                                                    locator=locator_title,
+                                                    error_message='Не нашли title статьи "Python" до ухода в background')
+        self.driver.background_app(2)
+        article_after = self.wait_for_el_present(by='xpath',
+                                                   locator=locator_title,
+                                                   error_message='Не нашли title статьи "Python" после ухода в background')
