@@ -1,3 +1,5 @@
+import time
+
 import pytest
 from selenium.webdriver import ActionChains
 from selenium.webdriver.common.by import By
@@ -49,6 +51,14 @@ class TestFirst:
         except Exception:
             pytest.fail(f"{error_message} | Локатор: {locator}'")
 
+    def wait_for_el_and_get_attribute(self, by, locator, attribute, timeout=5,
+                                      error_message='Элемент не найден или не получилось получить атрибут'):
+        try:
+            element = self.wait_for_el_present(by=by, locator=locator, timeout=timeout, error_message=error_message)
+            return element.get_attribute(attribute)
+        except Exception:
+            pytest.fail(f"{error_message} | Локатор: {locator}'")
+
     def assert_element_has_text(self, by, locator, text,
                                 error_message='Текст в элементе и дочерних элементах не найден', timeout=5):
         try:
@@ -83,6 +93,15 @@ class TestFirst:
     def assert_element_present(self, by, locator):
         elements = self.driver.find_elements(getattr(By, by.upper()), locator)
         assert len(elements) > 0, f'Нашли 0 элементов!'
+
+    def click_on_the_screen(self):
+        size = self.driver.get_window_size()
+        center_x = size['width'] // 2
+        center_y = size['height'] // 2
+        actions = ActionChains(self.driver)
+        actions.w3c_actions.pointer_action.move_to_location(center_x, center_y)
+        actions.w3c_actions.pointer_action.click()
+        actions.perform()
 
     def test_first(self):
         """Пример теста."""
@@ -199,3 +218,28 @@ class TestFirst:
         article_title_final = self.wait_for_el_and_click(by='xpath', locator="//*[@resource-id='org.wikipedia:id/page_list_item_title' and @text='Python']")
         self.assert_element_present(by='xpath',
                                     locator='//android.view.View[@resource-id="pcs"]/android.view.View[1]//*[contains(@text, "Python")]')
+
+    def test_change_screen_orientation(self):
+        key_word = 'Python'
+        skip_button = self.wait_for_el_and_click(by='xpath',
+                                                 locator='//*[contains(@resource-id, '
+                                                         '"org.wikipedia:id/fragment_onboarding_skip_button")]')
+        search_bar = self.wait_for_el_and_click(by='xpath',
+                                                locator='//*[contains(@resource-id, "org.wikipedia:id/search_container")]')
+        search_edit_frame = self.wait_for_el_and_send_keys(by='xpath',
+                                                           locator='//android.widget.AutoCompleteTextView'
+                                                                   '[@resource-id="org.wikipedia:id/search_src_text"]',
+                                                           keys=key_word)
+        search_result = self.wait_for_el_present(by='id', locator='org.wikipedia:id/search_results_list')
+        locator_title = "//*[@resource-id='org.wikipedia:id/page_list_item_title'and @text='Python']"
+        article = self.wait_for_el_and_click(by='xpath',
+                                             locator=locator_title)
+        time.sleep(3)
+        self.click_on_the_screen()
+        article_title_before_rotation = self.wait_for_el_and_get_attribute(by='xpath',
+                                    locator='//android.view.View[@resource-id="pcs"]/android.view.View[1]',
+                                                                           attribute='text')
+        self.driver.orientation = 'LANDSCAPE'
+        article_title_after_rotation = self.wait_for_el_and_get_attribute(by='xpath',
+                                    locator='//android.view.View[@resource-id="pcs"]/android.view.View[1]', attribute='text')
+        assert article_title_before_rotation == article_title_after_rotation, 'Заголовок статьи до и после ротации экрана не равны!'
