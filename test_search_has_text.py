@@ -7,6 +7,7 @@ from selenium.webdriver.common.actions.action_builder import ActionBuilder
 from selenium.webdriver.common.actions.pointer_input import PointerInput
 from selenium.webdriver.common.actions import interaction
 
+
 class TestFirst:
     @pytest.fixture(autouse=True)
     def __setup_class(self, driver_setup_teardown):
@@ -78,6 +79,10 @@ class TestFirst:
          .pause(time_of_swipe)
          .pointer_up())
         actions.perform()
+
+    def assert_element_present(self, by, locator):
+        elements = self.driver.find_elements(getattr(By, by.upper()), locator)
+        assert len(elements) > 0, f'Нашли 0 элементов!'
 
     def test_first(self):
         """Пример теста."""
@@ -166,4 +171,31 @@ class TestFirst:
                                                     text='Отправлять отчёты об использовании')
         accept_button = self.wait_for_el_and_click(by='id', locator='org.wikipedia:id/acceptButton')
         search_bar = self.wait_for_el_present(by='xpath',
+                                              locator='//*[contains(@resource-id, "org.wikipedia:id/search_container")]')
+
+    def test_article_has_title(self):
+        key_word = 'Python'
+        skip_button = self.wait_for_el_and_click(by='xpath',
+                                                 locator='//*[contains(@resource-id, '
+                                                         '"org.wikipedia:id/fragment_onboarding_skip_button")]')
+        search_bar = self.wait_for_el_and_click(by='xpath',
                                                 locator='//*[contains(@resource-id, "org.wikipedia:id/search_container")]')
+        search_edit_frame = self.wait_for_el_and_send_keys(by='xpath',
+                                                           locator='//android.widget.AutoCompleteTextView'
+                                                                   '[@resource-id="org.wikipedia:id/search_src_text"]',
+                                                           keys=key_word)
+        search_result = self.wait_for_el_present(by='id', locator='org.wikipedia:id/search_results_list')
+        locator_title = "//*[@resource-id='org.wikipedia:id/page_list_item_title'and @text='Python']"
+        article = self.wait_for_el_and_click(by='xpath',
+                                             locator=locator_title)
+        save_button = self.wait_for_el_and_click(by='xpath',
+                                                 locator="//*[@resource-id='org.wikipedia:id/page_save' and @text='Сохранить']")
+        list_button = self.wait_for_el_and_click(by='xpath', locator="//*[@resource-id='org.wikipedia:id/snackbar_action' and @text='Добавить в список']")
+        list_create = self.wait_for_el_and_send_keys(by='xpath',
+                                                     locator="//*[@resource-id='org.wikipedia:id/text_input' and @text='Название этого списка']",
+                                                     keys='Python')
+        ok_button = self.wait_for_el_and_click(by='xpath', locator="//*[@resource-id='android:id/button1' and @text='ОК']")
+        see_list_button = self.wait_for_el_and_click(by='xpath', locator="//*[@resource-id='org.wikipedia:id/snackbar_action' and @text='Посмотреть список']")
+        article_title_final = self.wait_for_el_and_click(by='xpath', locator="//*[@resource-id='org.wikipedia:id/page_list_item_title' and @text='Python']")
+        self.assert_element_present(by='xpath',
+                                    locator='//android.view.View[@resource-id="pcs"]/android.view.View[1]//*[contains(@text, "Python")]')
