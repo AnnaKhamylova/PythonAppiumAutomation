@@ -15,6 +15,20 @@ class TestFirst:
     def __setup_class(self, driver_setup_teardown):
         self.driver = driver_setup_teardown
 
+    @pytest.fixture(scope="function")
+    def landscape(self):
+        original_orientation = 'LANDSCAPE'
+        self.driver.orientation = original_orientation
+        yield
+        self.driver.orientation = original_orientation
+
+    @pytest.fixture(scope="function")
+    def portrait(self):
+        original_orientation = 'PORTRAIT'
+        self.driver.orientation = original_orientation
+        yield
+        self.driver.orientation = original_orientation
+
     def wait_for_el_present(self, by, locator, timeout=5, error_message='Элемент не найден'):
         try:
             element = WebDriverWait(self.driver, timeout).until(EC.presence_of_element_located(
@@ -103,7 +117,7 @@ class TestFirst:
         actions.w3c_actions.pointer_action.click()
         actions.perform()
 
-    def test_first(self):
+    def test_first(self, landscape):
         """Пример теста."""
         print(f'run first test')
         assert self.driver is not None, "Драйвер не инициализирован!"
@@ -219,7 +233,7 @@ class TestFirst:
         self.assert_element_present(by='xpath',
                                     locator='//android.view.View[@resource-id="pcs"]/android.view.View[1]//*[contains(@text, "Python")]')
 
-    def test_change_screen_orientation(self):
+    def test_change_screen_orientation(self, portrait):
         key_word = 'Python'
         skip_button = self.wait_for_el_and_click(by='xpath',
                                                  locator='//*[contains(@resource-id, '
