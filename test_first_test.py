@@ -5,8 +5,8 @@ import pytest
 
 class TestFirst:
     @pytest.fixture(autouse=True)
-    def __setup_class(self, driver_setup_teardown):
-        self.driver = driver_setup_teardown
+    def __setup_class(self, driver_android_setup_teardown):
+        self.driver = driver_android_setup_teardown
 
     def test_first(self):
         """Пример теста."""
