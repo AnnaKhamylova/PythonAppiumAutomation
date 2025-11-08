@@ -51,6 +51,8 @@ def driver_setup_teardown(set_up):
                 "appium:app": "/Users/akhamylova/PycharmProjects/PythonAppiumAutomation/Wikipedia.app"
             }
         )
+    else:
+        raise ValueError('Передайте существующую платформу: ios или android')
     driver = webdriver.Remote(
         "http://127.0.0.1:4723", options=options
         )

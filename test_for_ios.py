@@ -3,25 +3,13 @@ import pytest
 
 
 class TestAndroid:
-    def test_swipe_ios(self, set_up, main_page, portrait):
-        main_page.click_skip_button()
-        main_page.swipe_left(0.1)
-        # main_page.assert_element_has_text(
-        #     by="id",
-        #     locator="org.wikipedia:id/primaryTextView",
-        #     text="Новые способы исследований",
-        # )
-        # main_page.swipe_left(0.1)
-        # main_page.assert_element_has_text(
-        #     by="id",
-        #     locator="org.wikipedia:id/primaryTextView",
-        #     text="Списки для чтения с синхронизацией",
-        # )
-        # main_page.swipe_left(0.1)
-        # main_page.assert_element_has_text(
-        #     by="id",
-        #     locator="org.wikipedia:id/primaryTextView",
-        #     text="Отправлять отчёты об использовании",
-        # )
-        # main_page.click_accept_onboarding_button()
-        # main_page.search_bar()
+    def test_swipe_ios(self, set_up, main_page, portrait, welcome_page):
+        welcome_page.first_page()
+        welcome_page.swipe_left(0.1)
+        welcome_page.second_page()
+        welcome_page.swipe_left(0.1)
+        welcome_page.third_page()
+        welcome_page.swipe_left(0.1)
+        welcome_page.fourth_page()
+        welcome_page.click_reject_button()
+        main_page.search_bar()
