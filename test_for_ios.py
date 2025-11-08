@@ -1,7 +1,3 @@
-
-import pytest
-
-
 class TestIos:
     def test_swipe_ios(self, set_up, main_page, portrait, welcome_page):
         welcome_page.first_page()
