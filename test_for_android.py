@@ -1,7 +1,7 @@
 import time
 
-class Tests:
 
+class TestsAndroid:
     def test_first(self, set_up, main_page):
         """Пример теста."""
         print("run first test")
