@@ -4,6 +4,7 @@ import pytest
 from appium.options.android import UiAutomator2Options
 from appium import webdriver
 from appium.options.ios import XCUITestOptions
+from selenium.webdriver.common.by import By
 
 from page_objects.article_page import (
     ArticlePageObject,
@@ -25,9 +26,9 @@ class SetUp:
         self.platform = platform
 
 
-@pytest.fixture()
+@pytest.fixture
 def driver_setup_teardown(set_up):
-    options = None
+    driver = None
     if set_up.platform == 'android':
         options = UiAutomator2Options().load_capabilities(
             {
@@ -38,6 +39,9 @@ def driver_setup_teardown(set_up):
                 "appium:appActivity": ".main.MainActivity",
                 "appium:app": "/Users/akhamylova/PycharmProjects/PythonAppiumAutomation/org.wikipedia.apk",
             }
+        )
+        driver = webdriver.Remote(
+            "http://127.0.0.1:4723", options=options
         )
     elif set_up.platform == 'ios':
         options = XCUITestOptions().load_capabilities(
@@ -51,11 +55,44 @@ def driver_setup_teardown(set_up):
                 "appium:app": "/Users/akhamylova/PycharmProjects/PythonAppiumAutomation/Wikipedia.app"
             }
         )
-    else:
-        raise ValueError('Передайте существующую платформу: ios или android')
-    driver = webdriver.Remote(
-        "http://127.0.0.1:4723", options=options
+        driver = webdriver.Remote(
+            "http://127.0.0.1:4723", options=options
         )
+    elif set_up.platform == 'mobile_web':
+        from selenium import webdriver as selenium_webdriver
+        from selenium.webdriver.chrome.options import Options as ChromeOptions
+        from selenium.webdriver.chrome.service import Service
+        import subprocess
+        import os
+
+        try:
+            # Попробуем использовать webdriver-manager сначала
+            from webdriver_manager.chrome import ChromeDriverManager
+            service = Service(ChromeDriverManager().install())
+        except:
+            # Если не установлен webdriver-manager, используем локальный chromedriver
+            chromedriver_path = '/Users/akhamylova/webdrivers/chromedriver'
+
+            # Удаляем атрибут карантина программно
+            try:
+                subprocess.run(['xattr', '-d', 'com.apple.quarantine', chromedriver_path],
+                               check=True, capture_output=True)
+            except subprocess.CalledProcessError:
+                pass  # Игнорируем ошибки, если атрибута нет
+
+            service = Service(executable_path=chromedriver_path)
+
+        mobile_emulation = {
+            "deviceMetrics": {"width": 375, "height": 812, "pixelRatio": 3.0},
+            "userAgent": "Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0 Mobile/15E148 Safari/604.1"
+        }
+        chrome_options = ChromeOptions()
+        chrome_options.add_experimental_option("mobileEmulation", mobile_emulation)
+        chrome_options.add_argument("--no-sandbox")
+        chrome_options.add_argument("--disable-dev-shm-usage")
+        driver = selenium_webdriver.Chrome(service=service, options=chrome_options)
+        driver.get("https://www.wikipedia.org/")
+
     print("setUp completed")
     yield driver
     driver.quit()
@@ -116,3 +153,15 @@ def pytest_addoption(parser):
 def set_up(request):
     platform = request.config.getoption("--platform").lower()
     return SetUp(platform=platform)
+
+
+@pytest.fixture
+def auto_cleanup_saved_articles(driver_setup_teardown, set_up):
+    driver = driver_setup_teardown
+    yield driver
+    if set_up.platform == 'mobile_web':
+        unwatch_buttons = driver.find_elements(By.XPATH, '//a[contains(@href, "action=unwatch")]')
+        for button in unwatch_buttons:
+            button.click()
+        print(f"Удалено сохранений: {len(unwatch_buttons)}")
+
