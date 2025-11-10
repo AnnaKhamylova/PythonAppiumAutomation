@@ -1,4 +1,4 @@
-import time
+import allure
 
 from page_objects.base_page import (
     BasePageObject,
@@ -26,12 +26,13 @@ class MainPageObject(BasePageObject):
             return self.wait_for_el_and_click(locator=SKIP_BUTTON_IOS)
 
     def click_search_bar(self):
-        if self.platform == 'android':
-            return self.wait_for_el_and_click(locator=SEARCH_BAR_ANDROID)
-        elif self.platform == 'ios':
-            return self.wait_for_el_and_click(locator=SEARCH_FIELD_IOS)
-        elif self.platform == 'mobile_web':
-            return self.wait_for_el_and_click(locator=SEARCH_BAR_MWEB)
+        with allure.step("Кликаем на поисковую строку"):
+            if self.platform == 'android':
+                return self.wait_for_el_and_click(locator=SEARCH_BAR_ANDROID)
+            elif self.platform == 'ios':
+                return self.wait_for_el_and_click(locator=SEARCH_FIELD_IOS)
+            elif self.platform == 'mobile_web':
+                return self.wait_for_el_and_click(locator=SEARCH_BAR_MWEB)
 
     def search_bar(self):
         if self.platform == 'android':
@@ -40,12 +41,13 @@ class MainPageObject(BasePageObject):
             return self.wait_for_el_present(locator=SEARCH_FIELD_IOS)
 
     def send_keys_search(self, keys):
-        if self.platform == 'android':
-            return self.wait_for_el_and_send_keys(locator=SEARCH_CONTAINER_ANDROID, keys=keys)
-        elif self.platform == 'ios':
-            return self.wait_for_el_and_send_keys(locator=SEARCH_FIELD_IOS, keys=keys)
-        elif self.platform == 'mobile_web':
-            return self.wait_for_el_and_send_keys(locator=SEARCH_BAR_MWEB, keys=keys)
+        with allure.step(f"Ищем результаты по запросу {keys}"):
+            if self.platform == 'android':
+                return self.wait_for_el_and_send_keys(locator=SEARCH_CONTAINER_ANDROID, keys=keys)
+            elif self.platform == 'ios':
+                return self.wait_for_el_and_send_keys(locator=SEARCH_FIELD_IOS, keys=keys)
+            elif self.platform == 'mobile_web':
+                return self.wait_for_el_and_send_keys(locator=SEARCH_BAR_MWEB, keys=keys)
 
     def search_close(self):
         if self.platform == 'android':
@@ -70,30 +72,38 @@ class MainPageObject(BasePageObject):
             return self.wait_for_el_present(locator=SEARCH_RESULT_LIST)
 
     def login(self):
-        if self.platform == 'mobile_web':
-            return self.wait_for_el_and_send_keys(locator='xpath://*[@id="wpName1"]', keys='Admranev2025'), self.wait_for_el_and_send_keys(locator='xpath://*[@id="wpPassword1"]', keys='parol20203')
+        with allure.step("Пишем логин и пароль"):
+            if self.platform == 'mobile_web':
+                return self.wait_for_el_and_send_keys(locator='xpath://*[@id="wpName1"]', keys='Admranev2025'
+                                                      ), self.wait_for_el_and_send_keys(locator='xpath://*[@id="wpPassword1"]', keys='parol20203')
 
     def open_menu(self):
-        if self.platform == 'mobile_web':
-            return self.wait_for_el_and_click(locator='xpath://*[@id="mw-mf-page-center"]/header/div/nav[1]')
+        with allure.step("Открываем бургер-меню"):
+            if self.platform == 'mobile_web':
+                return self.wait_for_el_and_click(locator='xpath://*[@id="mw-mf-page-center"]/header/div/nav[1]')
 
     def open_login(self):
-        if self.platform == 'mobile_web':
-            return self.wait_for_el_and_click(locator='xpath://*[@id="p-personal"]')
+        with allure.step("Кликаем на кнопку 'Войти' в меню слева"):
+            if self.platform == 'mobile_web':
+                return self.wait_for_el_and_click(locator='xpath://*[@id="p-personal"]')
 
     def click_login(self):
-        if self.platform == 'mobile_web':
-            return self.wait_for_el_and_click(locator='xpath://*[@id="userloginForm"]/form/div[6]/div')
+        with allure.step("Нажимаем 'войти' после ввода логина и пароля"):
+            if self.platform == 'mobile_web':
+                return self.wait_for_el_and_click(locator='xpath://*[@id="userloginForm"]/form/div[6]/div')
 
-    def open_menu_auth(self):
-        if self.platform == 'mobile_web':
-            return self.wait_for_el_and_click(locator='xpath://*[@id="p-navigation"]/li[2]')
+    def open_random(self):
+        with allure.step("Открываем рандомную статью"):
+            if self.platform == 'mobile_web':
+                return self.wait_for_el_and_click(locator='xpath://*[@id="p-navigation"]/li[2]')
 
     def open_menu_auth_after_random(self):
-        if self.platform == 'mobile_web':
-            return self.wait_for_el_and_click(locator='xpath://*[@id="mw-mf-page-center"]/header/div/nav[1]')
+        with allure.step("Открываем бургер-меню после рандомной статьи"):
+            if self.platform == 'mobile_web':
+                return self.wait_for_el_and_click(locator='xpath://*[@id="mw-mf-page-center"]/header/div/nav[1]')
 
     def open_watchlist(self):
-        if self.platform == 'mobile_web':
-            return self.wait_for_el_and_click(locator = 'xpath://*[@id="p-personal"]/li[3]')
+        with allure.step("Открываем сохраненные статьи"):
+            if self.platform == 'mobile_web':
+                return self.wait_for_el_and_click(locator = 'xpath://*[@id="p-personal"]/li[3]')
 

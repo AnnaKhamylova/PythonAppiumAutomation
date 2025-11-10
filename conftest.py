@@ -1,4 +1,5 @@
 import os
+import time
 
 import pytest
 from appium.options.android import UiAutomator2Options
@@ -63,22 +64,17 @@ def driver_setup_teardown(set_up):
         from selenium.webdriver.chrome.options import Options as ChromeOptions
         from selenium.webdriver.chrome.service import Service
         import subprocess
-        import os
 
         try:
-            # Попробуем использовать webdriver-manager сначала
             from webdriver_manager.chrome import ChromeDriverManager
             service = Service(ChromeDriverManager().install())
         except:
-            # Если не установлен webdriver-manager, используем локальный chromedriver
             chromedriver_path = '/Users/akhamylova/webdrivers/chromedriver'
-
-            # Удаляем атрибут карантина программно
             try:
                 subprocess.run(['xattr', '-d', 'com.apple.quarantine', chromedriver_path],
                                check=True, capture_output=True)
             except subprocess.CalledProcessError:
-                pass  # Игнорируем ошибки, если атрибута нет
+                pass
 
             service = Service(executable_path=chromedriver_path)
 
@@ -156,12 +152,15 @@ def set_up(request):
 
 
 @pytest.fixture
-def auto_cleanup_saved_articles(driver_setup_teardown, set_up):
+def auto_cleanup_saved_articles(driver_setup_teardown, set_up, saved_articles_page):
     driver = driver_setup_teardown
     yield driver
     if set_up.platform == 'mobile_web':
         unwatch_buttons = driver.find_elements(By.XPATH, '//a[contains(@href, "action=unwatch")]')
         for button in unwatch_buttons:
             button.click()
+            time.sleep(2)
+            saved_articles_page.refresh_page()
+            unwatch_buttons = driver.find_elements(By.XPATH, '//a[contains(@href, "action=unwatch")]')
         print(f"Удалено сохранений: {len(unwatch_buttons)}")
 

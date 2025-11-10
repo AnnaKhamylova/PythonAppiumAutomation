@@ -1,4 +1,4 @@
-import time
+import allure
 
 from page_objects.base_page import (
     BasePageObject,
@@ -30,27 +30,29 @@ class ArticlePageObject(BasePageObject):
             return self.wait_for_el_present(locator=f'name:{article_name}')
 
     def click_save_button(self):
-        if self.platform == 'android':
-            return self.wait_for_el_and_click(locator=SAVE_BUTTON_ANDROID)
-        elif self.platform == 'ios':
-            return self.wait_for_el_and_click(locator=SAVE_BUTTON_IOS)
-        elif self.platform == 'mobile_web':
-            try:
-                watch_button = self.wait_for_el_present(locator=SAVE_BUTTON_MWEB, timeout=5)
-                button_text = watch_button.text.strip()
-                if "Не следить" in button_text:
-                    print("Уже следим за страницей, пропускаем клик")
-                elif "Следить" in button_text:
-                    print("Начинаем следить за страницей")
-                    watch_button.click()
-                else:
-                    print("Текст кнопки не распознан, выполняем клик")
-                    watch_button.click()
-                    return True
+        with allure.step("Нажимаем кнопку 'Сохранить' в статье"):
+            if self.platform == 'android':
+                return self.wait_for_el_and_click(locator=SAVE_BUTTON_ANDROID)
+            elif self.platform == 'ios':
+                return self.wait_for_el_and_click(locator=SAVE_BUTTON_IOS)
+            elif self.platform == 'mobile_web':
+                try:
+                    watch_button = self.wait_for_el_present(locator=SAVE_BUTTON_MWEB, timeout=5)
+                    button_text = watch_button.text.strip()
+                    if "Не следить" in button_text:
+                        with allure.step("Уже следим за страницей, пропускаем клик"):
+                            pass
+                    elif "Следить" in button_text:
+                        with allure.step("Начинаем следить за страницей"):
+                            watch_button.click()
+                    else:
+                        with allure.step("Текст кнопки не распознан, выполняем клик"):
+                            watch_button.click()
+                            return True
 
-            except Exception as e:
-                print(f"Ошибка: {e}, используем обычный клик")
-                return self.wait_for_el_and_click(locator=SAVE_BUTTON_MWEB)
+                except Exception as e:
+                    with allure.step(f"Ошибка: {e}, используем обычный клик"):
+                        return self.wait_for_el_and_click(locator=SAVE_BUTTON_MWEB)
 
     def click_add_to_list(self):
         if self.platform == 'android':

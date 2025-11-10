@@ -1,5 +1,6 @@
 import time
 
+import allure
 from selenium.webdriver.common.by import By
 
 from page_objects.base_page import (
@@ -18,11 +19,9 @@ class SavedArticlesPageObject(BasePageObject):
             return self.wait_for_el_and_click(locator=f"name:'{name}'")
 
     def undo_saving(self, title):
-        if self.platform == 'mobile_web':
-            try:
-                return self.wait_for_el_and_click(locator=f"xpath://li[@title='{title}']//a[contains(@class, 'watch-this-article')]")
-            except:
-                print('lol')
+        with allure.step(f"Убираем статью {title} из сохраненных"):
+            if self.platform == 'mobile_web':
+                return self.wait_for_el_and_click(locator=f"xpath://li[@title='{title}']//a[contains(@class, 'watch-this-article')]", timeout=10)
 
     def undo_saving_all(self):
         if self.platform == 'mobile_web':
@@ -52,21 +51,23 @@ class SavedArticlesPageObject(BasePageObject):
                 return 0
 
     def check_saved_article_not_title(self, title):
-        if self.platform == 'mobile_web':
-            try:
-                self.wait_for_el_present(locator=f"xpath:'//li[@title='{title}']//a[contains(@href, 'title={title}&action=unwatch')]'")
-                print(f"Cтатья с title='{title}' НАЙДЕНА в списке (а не должна быть)")
-                return False
-            except:
-                print(f"Cтатья с title='{title}' отсутствует в списке")
-                return True
+        with allure.step(f"Проверяем, что в сохраненных статьях нет статьи {title}"):
+            if self.platform == 'mobile_web':
+                try:
+                    self.wait_for_el_present(locator=f"xpath:'//li[@title='{title}']//a[contains(@href, 'title={title}&action=unwatch')]'")
+                    with allure.step(f"Cтатья с title='{title}' НАЙДЕНА в списке (а не должна быть)"):
+                        return False
+                except:
+                    with allure.step(f"Cтатья с title='{title}' отсутствует в списке"):
+                        return True
 
     def check_list_len(self, num):
-        if self.platform == 'mobile_web':
-            ul_element = self.wait_for_el_present(locator=f'xpath://*[@id="mw-content-text"]/ul')
-            direct_children = ul_element.find_elements(By.XPATH, './*')
-            count = len(direct_children)
-            assert count == num, "В списке слишком мало или много статей!"
+        with allure.step("Обновляем страницу"):
+            if self.platform == 'mobile_web':
+                ul_element = self.wait_for_el_present(locator=f'xpath://*[@id="mw-content-text"]/ul', timeout=5)
+                direct_children = ul_element.find_elements(By.XPATH, './*')
+                count = len(direct_children)
+                assert count == num, "В списке слишком мало или много статей!"
 
     def refresh_page(self):
         return self.driver.refresh()

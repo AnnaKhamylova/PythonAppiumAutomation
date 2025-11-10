@@ -1,3 +1,5 @@
+import allure
+
 from page_objects.base_page import (
     BasePageObject,
 )
@@ -14,10 +16,11 @@ class SearchPageObject(BasePageObject):
         super().__init__(driver=driver, set_up=set_up)
 
     def search_result_list(self):
-        if self.platform == 'android':
-            return self.wait_for_el_present(locator=SEARCH_RESULT_LIST_ANDROID)
-        elif self.platform == 'mobile_web':
-            return self.wait_for_el_present(locator=SEARCH_RESULT_LIST_MWEB)
+        with allure.step("Получаем элемент со списком найденных статей"):
+            if self.platform == 'android':
+                return self.wait_for_el_present(locator=SEARCH_RESULT_LIST_ANDROID)
+            elif self.platform == 'mobile_web':
+                return self.wait_for_el_present(locator=SEARCH_RESULT_LIST_MWEB)
 
     def search_results_list_not_present(self):
         if self.platform == 'android':
@@ -36,13 +39,14 @@ class SearchPageObject(BasePageObject):
                                               error_message=f"Не нашли title статьи {locator_title}")
 
     def click_article_in_list(self, locator_title=None):
-        if self.platform == 'android':
-            return self.wait_for_el_and_click(locator=f"xpath://android.widget.TextView[@resource-id='org.wikipedia:id/page_list_item_title' and @text='{locator_title}']", error_message=f"Не нашли title статьи {locator_title}")
-        elif self.platform == 'ios':
-            return self.wait_for_el_and_click(locator=f"xpath:(//XCUIElementTypeStaticText[@name='{locator_title}'])[1]",
-                                              error_message=f"Не нашли title статьи {locator_title}")
-        elif self.platform == 'mobile_web':
-            return self.wait_for_el_and_click(locator=f'xpath://*[@id="typeahead-suggestions"]/div/a[1]',
+        with allure.step(f"Кликаем на статью с названием {locator_title} в поисковых результатах "):
+            if self.platform == 'android':
+                return self.wait_for_el_and_click(locator=f"xpath://android.widget.TextView[@resource-id='org.wikipedia:id/page_list_item_title' and @text='{locator_title}']", error_message=f"Не нашли title статьи {locator_title}")
+            elif self.platform == 'ios':
+                return self.wait_for_el_and_click(locator=f"xpath:(//XCUIElementTypeStaticText[@name='{locator_title}'])[1]",
+                                                  error_message=f"Не нашли title статьи {locator_title}")
+            elif self.platform == 'mobile_web':
+                return self.wait_for_el_and_click(locator=f'xpath://*[@id="typeahead-suggestions"]/div/a[1]',
                                               error_message=f"Не нашли title статьи {locator_title}")
 
     def click_search_bar(self):
